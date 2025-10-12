@@ -1,0 +1,67 @@
+import React from 'react'
+import { useNavigate } from 'react-router-dom'
+import { createProduct } from '../api/products'
+import { Box, Paper, Typography, TextField, Button } from '@mui/material'
+
+export default function ProductForm() {
+  const navigate = useNavigate()
+  const [name, setName] = React.useState('')
+  const [price, setPrice] = React.useState<number>(0)
+  const [description, setDescription] = React.useState('')
+  const [images, setImages] = React.useState<FileList | null>(null)
+  const [error, setError] = React.useState<string | null>(null)
+  const [submitting, setSubmitting] = React.useState(false)
+
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    try {
+      setSubmitting(true)
+      setError(null)
+      
+      if (!name.trim()) throw new Error('Name is required')
+      if (Number.isNaN(price) || price < 0) throw new Error('Price must be a non-negative number')
+      
+      const fd = new FormData()
+      fd.append('name', name.trim())
+      fd.append('price', String(price))
+      if (description.trim()) fd.append('description', description.trim())
+      if (images) {
+        Array.from(images).forEach((f) => fd.append('images', f))
+      }
+      
+      await createProduct(fd)
+      navigate('/products')
+    } catch (err: any) {
+      console.error('Create product error:', err)
+      setError(err?.response?.data?.message || err?.message || 'Create failed')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Paper sx={{ p: 3, width: 480 }}>
+        <Typography variant="h5" gutterBottom>New Product</Typography>
+        <Box component="form" onSubmit={onSubmit} encType="multipart/form-data" sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <TextField label="Name" value={name} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setName(e.target.value)} fullWidth />
+          <TextField label="Price" type="number" value={Number.isNaN(price) ? '' : price} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrice(e.target.value === '' ? NaN : Number(e.target.value))} fullWidth />
+          <TextField label="Description" multiline minRows={3} value={description} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)} fullWidth />
+          <Button variant="outlined" component="label">
+            Upload Images
+            <input hidden name="images" type="file" multiple accept="image/*" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImages(e.target.files)} />
+          </Button>
+          {images && images.length > 0 && (
+            <Typography variant="body2" color="text.secondary">
+              {images.length} file(s) selected
+            </Typography>
+          )}
+          {error && <Typography color="error" variant="body2">{error}</Typography>}
+          <Button variant="contained" type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create'}</Button>
+        </Box>
+      </Paper>
+    </Box>
+  )
+}
+
+
