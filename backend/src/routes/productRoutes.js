@@ -29,11 +29,21 @@ router.put(
   '/:id',
   authenticateJWT,
   authorizeRoles('admin'),
+   upload.array('images', 5),
   [body('name').optional().isString(), body('price').optional().isFloat({ min: 0 })],
   Products.updateProduct
 );
 
 router.delete('/:id', authenticateJWT, authorizeRoles('admin'), Products.deleteProduct);
+
+// Upload additional images to existing product
+router.post(
+  '/:id/images',
+  authenticateJWT,
+  authorizeRoles('admin'),
+  upload.array('images', 5),
+  Products.uploadProductImages
+);
 
 module.exports = router;
 

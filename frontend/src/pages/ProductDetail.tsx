@@ -12,7 +12,8 @@ import {
   Divider,
   IconButton,
   TextField,
-  Alert
+  Alert,
+  Snackbar
 } from '@mui/material'
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon, Add as AddIcon, Login as LoginIcon } from '@mui/icons-material'
 import { useAuth } from '../hooks/useAuth'
@@ -27,6 +28,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = React.useState(true)
   const [error, setError] = React.useState<string | null>(null)
   const [quantity, setQuantity] = React.useState(1)
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false)
 
   React.useEffect(() => {
     if (!id) return
@@ -69,8 +71,15 @@ export default function ProductDetail() {
       }
     })
     
+    // Show success message
+    setSnackbarOpen(true)
+    
     // Reset quantity
     setQuantity(1)
+  }
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false)
   }
 
   if (loading) {
@@ -189,36 +198,40 @@ export default function ProductDetail() {
               </Typography>
               
               <Typography variant="h4" color="primary" fontWeight="bold">
-                ${product.price.toLocaleString()}
+                {product.price.toLocaleString()} VNĐ
               </Typography>
 
-              {/* Add to Cart Section */}
-              <Divider sx={{ my: 2 }} />
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  Add to Cart
-                </Typography>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <TextField
-                    label="Quantity"
-                    type="number"
-                    value={quantity}
-                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    inputProps={{ min: 1 }}
-                    size="small"
-                    sx={{ width: 100 }}
-                  />
-                  <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={handleAddToCart}
-                    size="large"
-                    disabled={!token}
-                  >
-                    {token ? 'Add to Cart' : 'Login to Add'}
-                  </Button>
-                </Stack>
-              </Box>
+              {/* Add to Cart Section - Hidden for Admin */}
+              {user?.role !== 'admin' && (
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Box>
+                    <Typography variant="h6" gutterBottom>
+                      Add to Cart
+                    </Typography>
+                    <Stack direction="row" spacing={2} alignItems="center">
+                      <TextField
+                        label="Quantity"
+                        type="number"
+                        value={quantity}
+                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                        inputProps={{ min: 1 }}
+                        size="small"
+                        sx={{ width: 100 }}
+                      />
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={handleAddToCart}
+                        size="large"
+                        disabled={!token}
+                      >
+                        {token ? 'Add to Cart' : 'Login to Add'}
+                      </Button>
+                    </Stack>
+                  </Box>
+                </>
+              )}
 
               {product.description && (
                 <>
@@ -290,6 +303,22 @@ export default function ProductDetail() {
           </Box>
         </Stack>
       </Paper>
+      
+      {/* Success Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity="success" 
+          sx={{ width: '100%' }}
+        >
+          {product?.name} đã được thêm vào giỏ hàng!
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

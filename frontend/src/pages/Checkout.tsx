@@ -13,7 +13,8 @@ import {
   MenuItem,
   Divider,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Snackbar
 } from '@mui/material'
 import { useCart } from '../contexts/CartContext'
 import { createOrder, type CreateOrderPayload } from '../api/orders'
@@ -23,6 +24,7 @@ export default function Checkout() {
   const { state: cartState, clearCart } = useCart()
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
+  const [snackbarOpen, setSnackbarOpen] = React.useState(false)
   
   const [formData, setFormData] = React.useState({
     street: '',
@@ -67,16 +69,25 @@ export default function Checkout() {
 
       await createOrder(orderData)
       
+      // Show success message
+      setSnackbarOpen(true)
+      
       // Clear cart after successful order
       clearCart()
       
-      // Navigate to orders page
-      navigate('/orders')
+      // Navigate to orders page after a short delay
+      setTimeout(() => {
+        navigate('/orders')
+      }, 2000)
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Failed to place order')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false)
   }
 
   if (cartState.items.length === 0) {
@@ -207,11 +218,11 @@ export default function Checkout() {
                       {item.product.name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {item.quantity} × ${item.product.price.toLocaleString()}
+                      {item.quantity} × {item.product.price.toLocaleString()} VNĐ
                     </Typography>
                   </Box>
                   <Typography variant="body2" fontWeight="bold">
-                    ${(item.product.price * item.quantity).toLocaleString()}
+                    {(item.product.price * item.quantity).toLocaleString()} VNĐ
                   </Typography>
                 </Box>
               ))}
@@ -227,12 +238,28 @@ export default function Checkout() {
             <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
               <Typography variant="h5" fontWeight="bold">Total Amount:</Typography>
               <Typography variant="h5" color="primary" fontWeight="bold">
-                ${cartState.totalAmount.toLocaleString()}
+                {cartState.totalAmount.toLocaleString()} VNĐ
               </Typography>
             </Box>
           </Paper>
         </Box>
       </Stack>
+      
+      {/* Success Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity="success" 
+          sx={{ width: '100%' }}
+        >
+          Đặt hàng thành công! Đang chuyển đến trang đơn hàng...
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

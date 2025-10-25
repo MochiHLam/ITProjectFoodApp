@@ -53,9 +53,13 @@ const OrderSchema = new mongoose.Schema(
 
 // Calculate total amount before saving
 OrderSchema.pre('save', function(next) {
-  this.totalAmount = this.items.reduce((total, item) => {
-    return total + (item.price * item.quantity);
-  }, 0);
+  if (this.items && this.items.length > 0) {
+    this.totalAmount = this.items.reduce((total, item) => {
+      return total + (item.price * item.quantity);
+    }, 0);
+  } else {
+    this.totalAmount = 0;
+  }
   next();
 });
 

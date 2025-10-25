@@ -365,7 +365,6 @@ graph TB
             P10[Orders.tsx]
             P11[UserManagement.tsx]
             P12[OAuthCallback.tsx]
-            P13[TestCRUD.tsx]
         end
         
         subgraph "Components"

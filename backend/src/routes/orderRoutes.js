@@ -64,4 +64,12 @@ router.patch(
   orderController.updateOrderStatus
 );
 
+// Admin cancel order (changes status, doesn't delete)
+router.patch(
+  '/:id/admin-cancel',
+  authenticateJWT,
+  authorizeRoles('admin'),
+  orderController.adminCancelOrder
+);
+
 module.exports = router;

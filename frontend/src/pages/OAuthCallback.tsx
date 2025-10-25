@@ -34,7 +34,7 @@ export default function OAuthCallback() {
            // Navigate after fetching user data
            setIsLoading(false)
            // Force page reload to ensure all components update
-           window.location.href = '/products'
+           window.location.href = '/'
         } catch (error) {
           console.error('Failed to fetch user data:', error)
           setIsLoading(false)

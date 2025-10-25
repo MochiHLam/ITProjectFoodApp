@@ -15,18 +15,11 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material'
-// Using text instead of icons to avoid dependency issues
-// import { 
-//   Restaurant as RestaurantIcon,
-//   AccessTime as AccessTimeIcon,
-//   CheckCircle as CheckCircleIcon,
-//   Cancel as CancelIcon
-// } from '@mui/icons-material'
-import { getUserOrders, getAllOrders, cancelOrder, updateOrderStatus, type Order } from '../api/orders'
+import { getUserOrders, getAllOrders, cancelOrder, updateOrderStatus, adminCancelOrder, type Order } from '../api/orders'
 import { useSocket } from '../hooks/useSocket'
 import { useAuth } from '../hooks/useAuth'
 
-// Extend Order type for admin view
+// Admin order type with populated user data
 interface AdminOrder extends Omit<Order, 'user'> {
   user: {
     _id: string
@@ -37,6 +30,7 @@ interface AdminOrder extends Omit<Order, 'user'> {
 
 type OrderStatus = 'pending' | 'confirmed' | 'preparing' | 'ready' | 'delivered' | 'cancelled'
 
+// Order status configuration with colors and icons
 type StatusConfigType = {
   [K in OrderStatus]: {
     color: 'warning' | 'info' | 'primary' | 'secondary' | 'success' | 'error'
@@ -54,6 +48,7 @@ const statusConfig: StatusConfigType = {
   cancelled: { color: 'error', label: 'Cancelled', icon: <span>❌</span> }
 }
 
+// Orders page - displays user orders or all orders for admin with real-time updates
 export default function Orders() {
   const { user } = useAuth()
   const [orders, setOrders] = React.useState<(Order | AdminOrder)[]>([])
@@ -107,7 +102,13 @@ export default function Orders() {
     if (!confirm('Are you sure you want to cancel this order?')) return
     
     try {
-      await cancelOrder(orderId)
+      if (isAdmin) {
+        // Admin cancel: changes status to cancelled (doesn't delete)
+        await adminCancelOrder(orderId)
+      } else {
+        // User cancel: deletes the order completely
+        await cancelOrder(orderId)
+      }
       loadOrders() // Reload orders
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to cancel order'
@@ -116,7 +117,7 @@ export default function Orders() {
   }
 
   const canCancelOrder = (status: OrderStatus) => {
-    return ['pending', 'confirmed'].includes(status)
+    return status === 'pending'
   }
 
   const handleUpdateStatus = async (orderId: string, newStatus: OrderStatus) => {
@@ -136,7 +137,7 @@ export default function Orders() {
       </Box>
     )
   }
-
+  
   if (error) {
     return (
       <Box sx={{ p: 3 }}>
@@ -150,18 +151,20 @@ export default function Orders() {
       <Box sx={{ textAlign: 'center', py: 8 }}>
         <Typography sx={{ fontSize: 80, mb: 2 }}>🍽️</Typography>
         <Typography variant="h5" gutterBottom>
-          No orders yet
+          {isAdmin ? 'No orders found' : 'No orders yet'}
         </Typography>
         <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          Start ordering some delicious food!
+          {isAdmin ? 'There are no orders in the system yet.' : 'Start ordering some delicious food!'}
         </Typography>
-        <Button 
-          variant="contained" 
-          size="large"
-          href="/products"
-        >
-          Browse Menu
-        </Button>
+        {!isAdmin && (
+          <Button 
+            variant="contained" 
+            size="large"
+            href="/products"
+          >
+            Browse Menu
+          </Button>
+        )}
       </Box>
     )
   }
@@ -184,7 +187,7 @@ export default function Orders() {
                   <Typography variant="body2" color="text.secondary">
                     {new Date(order.createdAt).toLocaleDateString()} at {new Date(order.createdAt).toLocaleTimeString()}
                   </Typography>
-                  {isAdmin && 'user' in order && typeof order.user === 'object' && (
+                  {isAdmin && 'user' in order && typeof order.user === 'object' && order.user && (
                     <Typography variant="body2" color="primary" sx={{ mt: 0.5 }}>
                       Customer: {order.user.name || order.user.email}
                     </Typography>
@@ -230,14 +233,14 @@ export default function Orders() {
                       <Box key={index} sx={{ display: 'flex', justifyContent: 'space-between' }}>
                         <Box>
                           <Typography variant="body2" fontWeight="medium">
-                            {item.product.name}
+                            {item.product?.name || 'Unknown Product'}
                           </Typography>
                           <Typography variant="body2" color="text.secondary">
-                            {item.quantity} × ${item.price.toLocaleString()}
+                            {item.quantity} × {item.price.toLocaleString()} VNĐ
                           </Typography>
                         </Box>
                         <Typography variant="body2" fontWeight="bold">
-                          ${(item.price * item.quantity).toLocaleString()}
+                          {(item.price * item.quantity).toLocaleString()} VNĐ
                         </Typography>
                       </Box>
                     ))}
@@ -271,7 +274,7 @@ export default function Orders() {
 
               <Stack direction="row" justifyContent="space-between" alignItems="center">
                 <Typography variant="h6" fontWeight="bold">
-                  Total: ${order.totalAmount.toLocaleString()}
+                  Total: {order.totalAmount.toLocaleString()} VNĐ
 </Typography>
                 
                 {!isAdmin && canCancelOrder(order.status) && (

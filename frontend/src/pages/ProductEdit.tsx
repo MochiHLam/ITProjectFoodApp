@@ -1,6 +1,6 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getProduct, updateProduct } from '../api/products'
+import { getProduct } from '../api/products'
 import { 
   Box, 
   Paper, 
@@ -9,10 +9,14 @@ import {
   Button, 
   Stack,
   IconButton,
-  CircularProgress
+  CircularProgress,
+  Card,
+  CardMedia,
+  Divider
 } from '@mui/material'
-import { ArrowBack as ArrowBackIcon } from '@mui/icons-material'
+import { ArrowBack as ArrowBackIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material'
 
+// Product edit page for admin with image upload functionality
 export default function ProductEdit() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -25,6 +29,9 @@ export default function ProductEdit() {
   const [name, setName] = React.useState('')
   const [price, setPrice] = React.useState<number>(0)
   const [description, setDescription] = React.useState('')
+  
+  // Image upload states
+  const [images, setImages] = React.useState<FileList | null>(null)
 
   React.useEffect(() => {
     if (!id) return
@@ -47,6 +54,14 @@ export default function ProductEdit() {
     loadProduct()
   }, [id])
 
+  // Handle image file selection
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setImages(e.target.files)
+    }
+  }
+
+  // Handle form submission with images
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     try {
@@ -56,11 +71,44 @@ export default function ProductEdit() {
       if (!name.trim()) throw new Error('Name is required')
       if (Number.isNaN(price) || price < 0) throw new Error('Price must be a non-negative number')
       
-      await updateProduct(id!, {
-        name: name.trim(),
-        price,
-        description: description.trim() || undefined
+      console.log('Submitting form with images:', images)
+      
+      // Create FormData for multipart upload
+      const formData = new FormData()
+      formData.append('name', name.trim())
+      formData.append('price', String(price))
+      if (description.trim()) formData.append('description', description.trim())
+      
+      // Add new images if any
+      if (images && images.length > 0) {
+        console.log('Adding images to FormData:', Array.from(images).map(f => f.name))
+        Array.from(images).forEach((file) => {
+          formData.append('images', file)
+        })
+      }
+      
+      // Update product with FormData
+      const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:4000'
+      console.log('Sending request to:', `${API_URL}/api/products/${id}`)
+      
+      const response = await fetch(`${API_URL}/api/products/${id}`, {
+        method: 'PUT',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
       })
+      
+      console.log('Response status:', response.status)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Response error:', errorText)
+        throw new Error(`Failed to update product: ${errorText}`)
+      }
+      
+      const result = await response.json()
+      console.log('Update result:', result)
       
       navigate(`/products/${id}`)
     } catch (err: any) {
@@ -134,6 +182,56 @@ export default function ProductEdit() {
               fullWidth
               placeholder="Describe this food item..."
             />
+
+            <Divider sx={{ my: 2 }} />
+
+            {/* Image Upload Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom>
+                Upload Images
+              </Typography>
+              
+              {/* Current Images */}
+              {product?.images && product.images.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Current Images:
+                  </Typography>
+                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
+                    {product.images.map((image: string, index: number) => (
+                      <Card key={index} sx={{ width: 100, height: 100 }}>
+                        <CardMedia
+                          component="img"
+                          height="100"
+                          image={image}
+                          alt={`Product image ${index + 1}`}
+                          sx={{ objectFit: 'cover' }}
+                        />
+                      </Card>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
+
+              {/* File Input - Simple like ProductForm */}
+              <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />}>
+                Upload Images
+                <input 
+                  hidden 
+                  name="images" 
+                  type="file" 
+                  multiple 
+                  accept="image/*" 
+                  onChange={handleImageChange} 
+                />
+              </Button>
+              
+              {images && images.length > 0 && (
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {images.length} file(s) selected
+                </Typography>
+              )}
+            </Box>
 
             {error && (
               <Typography color="error" variant="body2">

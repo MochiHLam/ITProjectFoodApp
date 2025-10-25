@@ -81,7 +81,7 @@ export default function Cart() {
                   {item.product.description}
                 </Typography>
                 <Typography variant="h6" color="primary" fontWeight="bold">
-                  ${item.product.price.toLocaleString()}
+                  {item.product.price.toLocaleString()} VNĐ
                 </Typography>
               </Box>
               
@@ -117,7 +117,7 @@ export default function Cart() {
                 
                 <Stack direction="row" alignItems="center" spacing={2}>
                   <Typography variant="h6" fontWeight="bold">
-                    ${(item.product.price * item.quantity).toLocaleString()}
+                    {(item.product.price * item.quantity).toLocaleString()} VNĐ
                   </Typography>
                   <IconButton 
                     color="error" 
@@ -142,7 +142,7 @@ export default function Cart() {
           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <Typography variant="h5" fontWeight="bold">Total Amount:</Typography>
             <Typography variant="h5" color="primary" fontWeight="bold">
-              ${state.totalAmount.toLocaleString()}
+              {state.totalAmount.toLocaleString()} VNĐ
             </Typography>
           </Box>
           <Stack direction="row" spacing={2} sx={{ mt: 3 }}>

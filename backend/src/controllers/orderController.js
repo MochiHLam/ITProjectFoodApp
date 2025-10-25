@@ -127,7 +127,7 @@ exports.updateOrderStatus = async (req, res, next) => {
   }
 };
 
-// Cancel order
+// Cancel order (user only - deletes the order)
 exports.cancelOrder = async (req, res, next) => {
   try {
     const orderId = req.params.id;
@@ -139,15 +139,43 @@ exports.cancelOrder = async (req, res, next) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    if (order.status === 'delivered' || order.status === 'cancelled') {
-      return res.status(400).json({ message: 'Cannot cancel this order' });
+    if (order.status !== 'pending') {
+      return res.status(400).json({ message: 'Can only cancel pending orders' });
     }
 
+    // Delete the order completely (user cancellation)
+    await Order.findByIdAndDelete(orderId);
+
+    // Realtime: notify user of cancellation
+    emitToUser(userId, 'order:cancelled', { orderId });
+
+    res.json({ message: 'Order cancelled and deleted successfully' });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Admin cancel order (changes status to cancelled, doesn't delete)
+exports.adminCancelOrder = async (req, res, next) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await Order.findById(orderId);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.status === 'delivered') {
+      return res.status(400).json({ message: 'Cannot cancel delivered order' });
+    }
+
+    // Update status to cancelled (admin cancellation)
     order.status = 'cancelled';
     await order.save();
 
-    // Realtime: notify user of cancellation
-    emitToUser(userId, 'order:cancelled', { order });
+    // Realtime: notify user of admin cancellation
+    emitToUser(order.user.toString(), 'order:admin_cancelled', { order });
 
     res.json(order);
   } catch (err) {

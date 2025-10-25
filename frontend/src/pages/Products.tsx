@@ -5,35 +5,27 @@ import { Box, TextField, Button, Paper, Stack, Typography, Card, CardContent, Ca
 import { Delete as DeleteIcon, Login as LoginIcon } from '@mui/icons-material'
 import { useAuth } from '../hooks/useAuth'
 
+// Products page with search functionality and product grid display
 export default function Products() {
   const navigate = useNavigate()
   const { user, token } = useAuth()
-  const [q, setQ] = React.useState('')
+  const [q, setQ] = React.useState('') // Search query
   const [page, setPage] = React.useState(1)
   const [items, setItems] = React.useState<any[]>([])
   const [total, setTotal] = React.useState(0)
   const limit = 10
 
+  // Load products with current search query and pagination
   async function load() {
     const data = await listProducts({ q, page, limit, sortBy: 'createdAt', sort: 'desc' })
     setItems(data.items)
     setTotal(data.total)
   }
 
+  // Load products on component mount and page change
   React.useEffect(() => {
     load()
-  }, [q, page])
-
-  // Auto-search when query changes
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      if (q !== '') {
-        setPage(1)
-        load()
-      }
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [q])
+  }, [page])
 
   async function onDelete(id: string) {
     if (!confirm('Delete?')) return
@@ -41,8 +33,15 @@ export default function Products() {
     load()
   }
 
+  // Clear search and reload all products
   function clearAll() {
     setQ('')
+    setPage(1)
+    load()
+  }
+
+  // Handle search button click
+  function handleSearch() {
     setPage(1)
     load()
   }
@@ -91,7 +90,7 @@ export default function Products() {
               onChange={(e) => setQ(e.target.value)}
               sx={{ minWidth: 300 }}
             />
-            <Button variant="outlined" onClick={() => { setPage(1); load() }}>
+            <Button variant="outlined" onClick={handleSearch}>
               Search
             </Button>
           </Stack>
@@ -196,7 +195,7 @@ export default function Products() {
                     </Typography>
                   )}
                   <Typography variant="h5" color="primary" fontWeight="bold">
-                    ${p.price.toLocaleString()}
+                    {p.price.toLocaleString()} VNĐ
                   </Typography>
                 </CardContent>
                 

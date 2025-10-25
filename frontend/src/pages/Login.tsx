@@ -4,6 +4,7 @@ import { useAuth } from '../hooks/useAuth'
 import { TextField, Button, Box, Typography, Paper, Divider, Stack } from '@mui/material'
 import { Google, GitHub, Facebook } from '@mui/icons-material'
 
+// Login page with email/password form and OAuth providers
 export default function Login() {
   const { setToken, setUser } = useAuth()
   const [email, setEmail] = React.useState('')
@@ -12,22 +13,22 @@ export default function Login() {
   const API = (import.meta as any).env.VITE_API_URL || 'http://localhost:4000'
   const [providers, setProviders] = React.useState<{ google?: boolean; github?: boolean; facebook?: boolean }>({})
 
+  // Fetch available OAuth providers from backend
   React.useEffect(() => {
-    // Fetch which OAuth providers are enabled on the backend
     fetch(`${API}/api/auth/providers`)
       .then((r) => r.json())
       .then((data) => setProviders(data || {}))
       .catch(() => setProviders({}))
   }, [API])
 
+  // Handle email/password login form submission
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
     try {
       const { token, user } = await login({ email, password })
       setToken(token)
       setUser(user)
-      // Force page reload to ensure all components update
-      window.location.href = '/products'
+      window.location.href = '/'
     } catch (err: any) {
       setError(err?.response?.data?.message || 'Login failed')
     }
@@ -37,12 +38,17 @@ export default function Login() {
     <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
       <Paper sx={{ p: 3, width: 360 }}>
         <Typography variant="h5" gutterBottom>Login</Typography>
+        
+        {/* Email/password login form */}
         <Box component="form" onSubmit={onSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField label="Email" value={email} onChange={(e) => setEmail(e.target.value)} fullWidth />
           <TextField label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} fullWidth />
           {error && <Typography color="error" variant="body2">{error}</Typography>}
           <Button variant="contained" type="submit">Login</Button>
+          
           <Divider sx={{ my: 1 }}>OR</Divider>
+          
+          {/* OAuth provider buttons */}
           <Stack direction="row" spacing={1} justifyContent="center">
             {providers.google && (
               <Button variant="outlined" startIcon={<Google />} onClick={() => { window.location.href = `${API}/api/auth/google` }} color="error">

@@ -98,3 +98,9 @@ export async function updateOrderStatus(id: string, status: string) {
   const { data } = await api.patch(`/api/orders/${id}/status`, { status })
   return data
 }
+
+// Admin cancel order (changes status, doesn't delete)
+export async function adminCancelOrder(id: string) {
+  const { data } = await api.patch(`/api/orders/${id}/admin-cancel`)
+  return data
+}

@@ -16,7 +16,6 @@ import Checkout from './pages/Checkout.tsx'
 import Orders from './pages/Orders.tsx'
 import { useAuth } from './hooks/useAuth'
 import OAuthCallback from './pages/OAuthCallback.tsx'
-import TestCRUD from './pages/TestCRUD'
 
 const theme = createTheme({
   palette: { mode: 'light', primary: { main: '#1976d2' } },
@@ -44,7 +43,6 @@ function App() {
               <Route path="/orders" element={token ? <Orders /> : <Navigate to="/login" replace />} />
               <Route path="/users" element={token && user?.role === 'admin' ? <UserManagement /> : <Navigate to="/" replace />} />
               <Route path="/oauth/callback" element={<OAuthCallback />} />
-              <Route path="/test" element={<TestCRUD />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </Container>
