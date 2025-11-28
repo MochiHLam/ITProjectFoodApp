@@ -12,7 +12,8 @@ import {
   CircularProgress,
   Card,
   CardMedia,
-  Divider
+  Divider,
+  Chip
 } from '@mui/material'
 import { ArrowBack as ArrowBackIcon, CloudUpload as CloudUploadIcon } from '@mui/icons-material'
 
@@ -29,6 +30,8 @@ export default function ProductEdit() {
   const [name, setName] = React.useState('')
   const [price, setPrice] = React.useState<number>(0)
   const [description, setDescription] = React.useState('')
+  const [tags, setTags] = React.useState<string[]>([])
+  const [tagInput, setTagInput] = React.useState('')
   
   // Image upload states
   const [images, setImages] = React.useState<FileList | null>(null)
@@ -44,6 +47,7 @@ export default function ProductEdit() {
         setName(data.name)
         setPrice(data.price)
         setDescription(data.description || '')
+        setTags(data.tags || [])
       } catch (err: any) {
         setError(err?.message || 'Failed to load food item')
       } finally {
@@ -61,6 +65,22 @@ export default function ProductEdit() {
     }
   }
 
+  // Normalize and add tags from a raw input string (supports comma-separated or JSON-like strings)
+  function addTagsFromInput(rawInput: string) {
+    if (!rawInput) return
+    const sanitized = rawInput
+      .replace(/^\s*\[/, '')
+      .replace(/\]\s*$/, '')
+    const splitTags = sanitized
+      .split(',')
+      .map(t => t.replace(/^\s*"|\s*"$/g, '').replace(/^\s*'|\s*'$/g, ''))
+      .map(t => t.trim().toLowerCase())
+      .filter(t => t.length > 0)
+    if (splitTags.length === 0) return
+    const unique = Array.from(new Set([...tags, ...splitTags]))
+    setTags(unique)
+  }
+
   // Handle form submission with images
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -73,11 +93,20 @@ export default function ProductEdit() {
       
       console.log('Submitting form with images:', images)
       
+      // Process any pending tag input not yet confirmed with Enter
+      if (tagInput.trim()) {
+        addTagsFromInput(tagInput)
+        setTagInput('')
+      }
+
       // Create FormData for multipart upload
       const formData = new FormData()
       formData.append('name', name.trim())
       formData.append('price', String(price))
       if (description.trim()) formData.append('description', description.trim())
+      if (tags.length > 0) {
+        formData.append('tags', JSON.stringify(tags))
+      }
       
       // Add new images if any
       if (images && images.length > 0) {
@@ -182,6 +211,48 @@ export default function ProductEdit() {
               fullWidth
               placeholder="Describe this food item..."
             />
+
+            {/* Tags Input */}
+            <Box>
+              <TextField
+                label="Add Tags"
+                placeholder="Enter tags separated by commas (e.g., phở, bò, truyền thống)"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onBlur={() => {
+                  if (tagInput.trim()) {
+                    addTagsFromInput(tagInput)
+                    setTagInput('')
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && tagInput.trim()) {
+                    e.preventDefault()
+                    addTagsFromInput(tagInput)
+                    setTagInput('')
+                  }
+                }}
+                fullWidth
+                size="small"
+              />
+              {tags.length > 0 && (
+                <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: 'wrap', gap: 1 }}>
+                  {tags.map((tag, index) => (
+                    <Chip
+                      key={index}
+                      label={tag}
+                      onDelete={() => setTags(tags.filter((_, i) => i !== index))}
+                      size="small"
+                      color="primary"
+                      variant="outlined"
+                    />
+                  ))}
+                </Stack>
+              )}
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                Enter tags separated by commas and press Enter to add (e.g., phở, bò, truyền thống)
+              </Typography>
+            </Box>
 
             <Divider sx={{ my: 2 }} />
 

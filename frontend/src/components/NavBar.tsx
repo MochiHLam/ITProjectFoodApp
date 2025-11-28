@@ -52,7 +52,7 @@ export default function NavBar() {
               
               {/* User role indicator */}
               <Chip 
-                label={user?.role === 'admin' ? 'Admin' : 'User'} 
+                label={user?.name?.split(' ').pop() || user?.email?.split('@')[0] || 'User'} 
                 color={user?.role === 'admin' ? 'error' : 'default'}
                 size="small"
                 sx={{ color: 'white' }}

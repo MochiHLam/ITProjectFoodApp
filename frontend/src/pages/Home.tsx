@@ -1,4 +1,4 @@
-import { Link as RouterLink } from 'react-router-dom'
+  import { Link as RouterLink } from 'react-router-dom'
 import { 
   Box, 
   Typography, 
@@ -126,7 +126,7 @@ export default function Home() {
             >
               Browse Menu
             </Button>
-            {token && (
+            {token && user?.role !== 'admin' && (
               <Button
                 variant="outlined"
                 size="large"

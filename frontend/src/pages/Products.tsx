@@ -1,6 +1,6 @@
 import React from 'react'
 import { listProducts, deleteProduct } from '../api/products'
-import { Link as RouterLink, useNavigate } from 'react-router-dom'
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { Box, TextField, Button, Paper, Stack, Typography, Card, CardContent, CardMedia, Alert } from '@mui/material'
 import { Delete as DeleteIcon, Login as LoginIcon } from '@mui/icons-material'
 import { useAuth } from '../hooks/useAuth'
@@ -8,12 +8,14 @@ import { useAuth } from '../hooks/useAuth'
 // Products page with search functionality and product grid display
 export default function Products() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, token } = useAuth()
-  const [q, setQ] = React.useState('') // Search query
-  const [page, setPage] = React.useState(1)
+  const locationState = location.state as { page?: number; q?: string } | null
+  const [q, setQ] = React.useState(locationState?.q ?? '') // Search query
+  const [page, setPage] = React.useState(locationState?.page ?? 1)
   const [items, setItems] = React.useState<any[]>([])
   const [total, setTotal] = React.useState(0)
-  const limit = 10
+  const limit = 12
 
   // Load products with current search query and pagination
   async function load() {
@@ -150,7 +152,7 @@ export default function Products() {
                     boxShadow: 4
                   }
                 }}
-                onClick={() => navigate(`/products/${p._id}`)}
+                onClick={() => navigate(`/products/${p._id}`, { state: { page, q } })}
               >
                 {p.images && p.images.length > 0 ? (
                   <CardMedia

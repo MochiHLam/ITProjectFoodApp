@@ -1,5 +1,5 @@
 import React from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { getProduct } from '../api/products'
 import { 
   Box, 
@@ -22,6 +22,7 @@ import { useCart } from '../contexts/CartContext'
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, token } = useAuth()
   const { dispatch } = useCart()
   const [product, setProduct] = React.useState<any>(null)
@@ -29,6 +30,7 @@ export default function ProductDetail() {
   const [error, setError] = React.useState<string | null>(null)
   const [quantity, setQuantity] = React.useState(1)
   const [snackbarOpen, setSnackbarOpen] = React.useState(false)
+  const navigationState = location.state as { page?: number; q?: string } | null
 
   React.useEffect(() => {
     if (!id) return
@@ -47,6 +49,7 @@ export default function ProductDetail() {
     
     loadProduct()
   }, [id])
+
 
   const handleAddToCart = () => {
     if (!product) return
@@ -82,6 +85,20 @@ export default function ProductDetail() {
     setSnackbarOpen(false)
   }
 
+  const handleBack = () => {
+    if (navigationState?.page || navigationState?.q) {
+      navigate('/products', {
+        state: {
+          page: navigationState?.page ?? 1,
+          q: navigationState?.q ?? ''
+        }
+      })
+      return
+    }
+
+    navigate('/products')
+  }
+
   if (loading) {
     return (
       <Box sx={{ p: 3, textAlign: 'center' }}>
@@ -96,7 +113,7 @@ export default function ProductDetail() {
         <Typography color="error" gutterBottom>
           {error || 'Food item not found'}
         </Typography>
-        <Button variant="outlined" onClick={() => navigate('/products')}>
+        <Button variant="outlined" onClick={handleBack}>
           Back to Menu
         </Button>
       </Box>
@@ -128,7 +145,7 @@ export default function ProductDetail() {
       )}
 
       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 3 }}>
-        <IconButton onClick={() => navigate('/products')}>
+        <IconButton onClick={handleBack}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h4" fontWeight="bold">
@@ -247,40 +264,46 @@ export default function ProductDetail() {
                 </>
               )}
 
-              {product.tags && product.tags.length > 0 && (
+              <Divider />
+              <Box>
+                <Typography variant="h6" gutterBottom>
+                  Tags
+                </Typography>
+                {product.tags && product.tags.length > 0 ? (
+                  <Stack direction="row" spacing={1} flexWrap="wrap">
+                    {product.tags.map((tag: string, index: number) => (
+                      <Chip key={index} label={tag} size="small" color="primary" variant="outlined" />
+                    ))}
+                  </Stack>
+                ) : (
+                  <Typography variant="body2" color="text.secondary">
+                    No tags available
+                  </Typography>
+                )}
+              </Box>
+
+              {/* Food Information - Only visible for Admin */}
+              {user?.role === 'admin' && (
                 <>
                   <Divider />
                   <Box>
                     <Typography variant="h6" gutterBottom>
-                      Tags
+                      Food Information
                     </Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {product.tags.map((tag: string, index: number) => (
-                        <Chip key={index} label={tag} size="small" />
-                      ))}
+                    <Stack spacing={1}>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Added to Menu:</strong> {new Date(product.createdAt).toLocaleDateString()}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Last Updated:</strong> {new Date(product.updatedAt).toLocaleDateString()}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Food ID:</strong> {product._id}
+                      </Typography>
                     </Stack>
                   </Box>
                 </>
               )}
-
-              <Divider />
-              
-              <Box>
-                <Typography variant="h6" gutterBottom>
-                  Food Information
-                </Typography>
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Added to Menu:</strong> {new Date(product.createdAt).toLocaleDateString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Last Updated:</strong> {new Date(product.updatedAt).toLocaleDateString()}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Food ID:</strong> {product._id}
-                  </Typography>
-                </Stack>
-              </Box>
 
               <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
                 {user?.role === 'admin' && (
@@ -294,7 +317,7 @@ export default function ProductDetail() {
                 )}
                 <Button 
                   variant="outlined" 
-                  onClick={() => navigate('/products')}
+                  onClick={handleBack}
                 >
                   Back to Menu
                 </Button>

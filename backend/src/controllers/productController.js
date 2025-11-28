@@ -10,7 +10,48 @@ exports.createProduct = async (req, res, next) => {
     if (req.files && Array.isArray(req.files)) {
       req.files.forEach((f) => images.push(`/uploads/${f.filename}`));
     }
-    const product = await Product.create({ ...req.body, images, createdBy: req.user.id });
+    
+    // Parse tags if provided as JSON string
+    const productData = { ...req.body };
+    console.log('Received tags:', productData.tags, 'Type:', typeof productData.tags);
+    
+    if (productData.tags !== undefined) {
+      if (typeof productData.tags === 'string') {
+        try {
+          const parsed = JSON.parse(productData.tags);
+          // Ensure it's an array
+          productData.tags = Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          // If parsing fails, treat as single tag or split by comma
+          if (productData.tags.includes(',')) {
+            productData.tags = productData.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+          } else {
+            productData.tags = [productData.tags.trim()];
+          }
+        }
+      } else if (Array.isArray(productData.tags)) {
+        // If already an array, ensure all items are strings
+        productData.tags = productData.tags.map(tag => {
+          if (typeof tag === 'string') {
+            // Check if it's a JSON string that needs parsing
+            if (tag.startsWith('[') && tag.endsWith(']')) {
+              try {
+                const parsed = JSON.parse(tag);
+                return Array.isArray(parsed) ? parsed : tag;
+              } catch (e) {
+                return tag;
+              }
+            }
+            return tag;
+          }
+          return String(tag);
+        }).flat().filter(tag => tag && tag.length > 0);
+      }
+    }
+    
+    console.log('Processed tags:', productData.tags);
+    
+    const product = await Product.create({ ...productData, images, createdBy: req.user.id });
     res.status(201).json(product);
   } catch (err) {
     next(err);
@@ -55,6 +96,52 @@ exports.updateProduct = async (req, res, next) => {
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     
     const updateData = { ...req.body };
+    
+    // Parse tags if provided as JSON string
+    console.log('Update - Received tags:', updateData.tags, 'Type:', typeof updateData.tags);
+    
+    if (updateData.tags !== undefined) {
+      if (typeof updateData.tags === 'string') {
+        try {
+          const parsed = JSON.parse(updateData.tags);
+          // Ensure it's an array
+          updateData.tags = Array.isArray(parsed) ? parsed : [parsed];
+        } catch (e) {
+          // If parsing fails, treat as single tag or split by comma
+          if (updateData.tags.includes(',')) {
+            updateData.tags = updateData.tags.split(',').map(t => t.trim()).filter(t => t.length > 0);
+          } else {
+            updateData.tags = updateData.tags.trim() ? [updateData.tags.trim()] : [];
+          }
+        }
+      } else if (Array.isArray(updateData.tags)) {
+        // If already an array, ensure all items are strings and flatten if needed
+        updateData.tags = updateData.tags.map(tag => {
+          if (typeof tag === 'string') {
+            // Check if it's a JSON string that needs parsing
+            if (tag.startsWith('[') && tag.endsWith(']')) {
+              try {
+                const parsed = JSON.parse(tag);
+                return Array.isArray(parsed) ? parsed : tag;
+              } catch (e) {
+                return tag;
+              }
+            }
+            return tag;
+          }
+          return String(tag);
+        }).flat().filter(tag => tag && tag.length > 0);
+      }
+      // If tags is an empty string or empty array, set to empty array
+      if (updateData.tags === '' || (Array.isArray(updateData.tags) && updateData.tags.length === 0)) {
+        updateData.tags = [];
+      }
+    } else {
+      // If tags not provided, don't update it (keep existing tags)
+      delete updateData.tags;
+    }
+    
+    console.log('Update - Processed tags:', updateData.tags);
     
     // Handle image uploads
     if (req.files && Array.isArray(req.files)) {
