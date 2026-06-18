@@ -1,6 +1,7 @@
 import React from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getProduct } from '../api/products'
+import { getProduct, updateProductWithImages } from '../lib/products'
+import { parseTags } from '../lib/utils'
 import { 
   Box, 
   Paper, 
@@ -65,22 +66,6 @@ export default function ProductEdit() {
     }
   }
 
-  // Normalize and add tags from a raw input string (supports comma-separated or JSON-like strings)
-  function addTagsFromInput(rawInput: string) {
-    if (!rawInput) return
-    const sanitized = rawInput
-      .replace(/^\s*\[/, '')
-      .replace(/\]\s*$/, '')
-    const splitTags = sanitized
-      .split(',')
-      .map(t => t.replace(/^\s*"|\s*"$/g, '').replace(/^\s*'|\s*'$/g, ''))
-      .map(t => t.trim().toLowerCase())
-      .filter(t => t.length > 0)
-    if (splitTags.length === 0) return
-    const unique = Array.from(new Set([...tags, ...splitTags]))
-    setTags(unique)
-  }
-
   // Handle form submission with images
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -95,7 +80,7 @@ export default function ProductEdit() {
       
       // Process any pending tag input not yet confirmed with Enter
       if (tagInput.trim()) {
-        addTagsFromInput(tagInput)
+        setTags(parseTags(tagInput, tags))
         setTagInput('')
       }
 
@@ -117,26 +102,7 @@ export default function ProductEdit() {
       }
       
       // Update product with FormData
-      const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:4000'
-      console.log('Sending request to:', `${API_URL}/api/products/${id}`)
-      
-      const response = await fetch(`${API_URL}/api/products/${id}`, {
-        method: 'PUT',
-        body: formData,
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
-      
-      console.log('Response status:', response.status)
-      
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Response error:', errorText)
-        throw new Error(`Failed to update product: ${errorText}`)
-      }
-      
-      const result = await response.json()
+      const result = await updateProductWithImages(id!, formData)
       console.log('Update result:', result)
       
       navigate(`/products/${id}`)
@@ -221,14 +187,14 @@ export default function ProductEdit() {
                 onChange={(e) => setTagInput(e.target.value)}
                 onBlur={() => {
                   if (tagInput.trim()) {
-                    addTagsFromInput(tagInput)
+                    setTags(parseTags(tagInput, tags))
                     setTagInput('')
                   }
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && tagInput.trim()) {
                     e.preventDefault()
-                    addTagsFromInput(tagInput)
+                    setTags(parseTags(tagInput, tags))
                     setTagInput('')
                   }
                 }}

@@ -15,5 +15,10 @@ export async function me() {
   return data
 }
 
+export async function getProviders(): Promise<{ google?: boolean; github?: boolean; facebook?: boolean }> {
+  const { data } = await api.get('/api/auth/providers')
+  return data || {}
+}
+
 
 

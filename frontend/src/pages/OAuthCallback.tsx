@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Typography, Box, CircularProgress } from '@mui/material'
 import { useAuth } from '../hooks/useAuth'
+import { me } from '../lib/auth'
 
 export default function OAuthCallback() {
   const navigate = useNavigate()
@@ -19,22 +20,14 @@ export default function OAuthCallback() {
       // Then fetch user data immediately to avoid redirect to login
       const fetchUserData = async () => {
         try {
-          const API_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:4000'
-          const response = await fetch(`${API_URL}/api/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          })
-          if (response.ok) {
-            const data = await response.json()
-            if (data.user) {
-              setUser(data.user)
-            }
+          const data = await me()
+          if (data.user) {
+            setUser(data.user)
           }
-           // Navigate after fetching user data
-           setIsLoading(false)
-           // Force page reload to ensure all components update
-           window.location.href = '/'
+          // Navigate after fetching user data
+          setIsLoading(false)
+          // Force page reload to ensure all components update
+          window.location.href = '/'
         } catch (error) {
           console.error('Failed to fetch user data:', error)
           setIsLoading(false)

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { me } from '../api/auth'
+import { me } from '../lib/auth'
 
 export function useAuth() {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))

@@ -15,7 +15,7 @@ import {
   FormControl,
   InputLabel,
 } from '@mui/material'
-import { getUserOrders, getAllOrders, cancelOrder, updateOrderStatus, adminCancelOrder, type Order } from '../api/orders'
+import { getUserOrders, getAllOrders, cancelOrder, updateOrderStatus, adminCancelOrder, type Order } from '../lib/orders'
 import { useSocket } from '../hooks/useSocket'
 import { useAuth } from '../hooks/useAuth'
 

@@ -1,14 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { io, Socket } from 'socket.io-client'
 import { useAuth } from './useAuth'
+import { WS_URL } from '../lib/client'
 
 export function useSocket() {
   const socketRef = useRef<Socket | null>(null)
   const { user } = useAuth()
 
   useEffect(() => {
-    const url = (import.meta as any).env.VITE_WS_URL || 'http://localhost:4000'
-    const s = io(url)
+    const s = io(WS_URL)
     socketRef.current = s
 
     if (user?._id) {

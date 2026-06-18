@@ -19,6 +19,7 @@ import {
   ShoppingCart as ShoppingCartIcon
 } from '@mui/icons-material'
 import { useCart } from '../contexts/CartContext'
+import { API_BASE_URL } from '../lib/client'
 
 export default function Cart() {
   const navigate = useNavigate()
@@ -69,7 +70,7 @@ export default function Cart() {
             <CardMedia
               component="img"
               sx={{ width: 150, height: 150 }}
-              image={item.product.images?.[0] ? `http://localhost:4000${item.product.images[0]}` : '/placeholder-food.jpg'}
+              image={item.product.images?.[0] ? `${API_BASE_URL}${item.product.images[0]}` : '/placeholder-food.jpg'}
               alt={item.product.name}
             />
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>

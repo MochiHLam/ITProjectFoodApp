@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { register as registerApi } from '../api/auth'
+import { register as registerApi, getProviders } from '../lib/auth'
+import { API_BASE_URL } from '../lib/client'
 import { TextField, Button, Box, Typography, Paper, Divider, Stack } from '@mui/material'
 import { Google, GitHub, Facebook } from '@mui/icons-material'
 
@@ -10,16 +11,12 @@ export default function Register() {
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
-  const API = (import.meta as any).env.VITE_API_URL || 'http://localhost:4000'
-  const [providers, setProviders] = React.useState<{ google?: boolean; github?: boolean; facebook?: boolean }>({})
+  const [providers, setProviders] = React.useState<{ google?: boolean; github?: boolean; facebook?: boolean }>({})  
 
   React.useEffect(() => {
     // Fetch which OAuth providers are enabled on the backend
-    fetch(`${API}/api/auth/providers`)
-      .then((r) => r.json())
-      .then((data) => setProviders(data || {}))
-      .catch(() => setProviders({}))
-  }, [API])
+    getProviders().then(setProviders).catch(() => setProviders({}))
+  }, [])
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -44,17 +41,17 @@ export default function Register() {
           <Divider sx={{ my: 1 }}>OR</Divider>
           <Stack direction="row" spacing={1} justifyContent="center">
             {providers.google && (
-              <Button variant="outlined" startIcon={<Google />} onClick={() => { window.location.href = `${API}/api/auth/google` }} color="error">
+              <Button variant="outlined" startIcon={<Google />} onClick={() => { window.location.href = `${API_BASE_URL}/api/auth/google` }} color="error">
                 Google
               </Button>
             )}
             {providers.github && (
-              <Button variant="outlined" startIcon={<GitHub />} onClick={() => { window.location.href = `${API}/api/auth/github` }} color="inherit">
+              <Button variant="outlined" startIcon={<GitHub />} onClick={() => { window.location.href = `${API_BASE_URL}/api/auth/github` }} color="inherit">
                 GitHub
               </Button>
             )}
             {providers.facebook && (
-              <Button variant="outlined" startIcon={<Facebook />} onClick={() => { window.location.href = `${API}/api/auth/facebook` }} color="primary">
+              <Button variant="outlined" startIcon={<Facebook />} onClick={() => { window.location.href = `${API_BASE_URL}/api/auth/facebook` }} color="primary">
                 Facebook
               </Button>
             )}

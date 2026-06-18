@@ -1,5 +1,5 @@
 import React from 'react'
-import { listUsers, updateUser as apiUpdateUser, deleteUser as apiDeleteUser, type User } from '../api/users'
+import { listUsers, updateUser as apiUpdateUser, deleteUser as apiDeleteUser, type User } from '../lib/users'
 import { 
   Box, 
   Paper, 

@@ -1,6 +1,7 @@
 import React from 'react'
 import { useNavigate } from 'react-router-dom'
-import { createProduct } from '../api/products'
+import { createProduct } from '../lib/products'
+import { parseTags } from '../lib/utils'
 import { Box, Paper, Typography, TextField, Button, Chip, Stack } from '@mui/material'
 
 export default function ProductForm() {
@@ -14,22 +15,6 @@ export default function ProductForm() {
   const [error, setError] = React.useState<string | null>(null)
   const [submitting, setSubmitting] = React.useState(false)
 
-  // Normalize and add tags from a raw input string (supports comma-separated or JSON-like strings)
-  function addTagsFromInput(rawInput: string) {
-    if (!rawInput) return
-    // Remove wrapping brackets if user pasted JSON array, and quotes around items
-    const sanitized = rawInput
-      .replace(/^\s*\[/, '')
-      .replace(/\]\s*$/, '')
-    const splitTags = sanitized
-      .split(',')
-      .map(t => t.replace(/^\s*"|\s*"$/g, '').replace(/^\s*'|\s*'$/g, ''))
-      .map(t => t.trim().toLowerCase())
-      .filter(t => t.length > 0)
-    if (splitTags.length === 0) return
-    const unique = Array.from(new Set([...tags, ...splitTags]))
-    setTags(unique)
-  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -42,7 +27,7 @@ export default function ProductForm() {
       
       // Process any pending tag input not yet confirmed with Enter
       if (tagInput.trim()) {
-        addTagsFromInput(tagInput)
+        setTags(parseTags(tagInput, tags))
         setTagInput('')
       }
 
@@ -85,14 +70,14 @@ export default function ProductForm() {
               onChange={(e) => setTagInput(e.target.value)}
               onBlur={() => {
                 if (tagInput.trim()) {
-                  addTagsFromInput(tagInput)
+                  setTags(parseTags(tagInput, tags))
                   setTagInput('')
                 }
               }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && tagInput.trim()) {
                   e.preventDefault()
-                  addTagsFromInput(tagInput)
+                  setTags(parseTags(tagInput, tags))
                   setTagInput('')
                 }
               }}

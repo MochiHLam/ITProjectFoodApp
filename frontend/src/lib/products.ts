@@ -33,6 +33,13 @@ export async function updateProduct(id: string, payload: Partial<Product>) {
   return data
 }
 
+export async function updateProductWithImages(id: string, formData: FormData) {
+  const { data } = await api.put(`/api/products/${id}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return data
+}
+
 export async function deleteProduct(id: string) {
   const { data } = await api.delete(`/api/products/${id}`)
   return data

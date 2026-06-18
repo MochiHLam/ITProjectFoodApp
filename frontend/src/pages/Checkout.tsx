@@ -17,7 +17,7 @@ import {
   Snackbar
 } from '@mui/material'
 import { useCart } from '../contexts/CartContext'
-import { createOrder, type CreateOrderPayload } from '../api/orders'
+import { createOrder, type CreateOrderPayload } from '../lib/orders'
 
 export default function Checkout() {
   const navigate = useNavigate()

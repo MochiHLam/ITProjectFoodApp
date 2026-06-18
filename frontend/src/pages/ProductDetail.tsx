@@ -1,6 +1,6 @@
 import React from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { getProduct } from '../api/products'
+import { getProduct } from '../lib/products'
 import { 
   Box, 
   Paper, 
@@ -18,6 +18,7 @@ import {
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon, Add as AddIcon, Login as LoginIcon } from '@mui/icons-material'
 import { useAuth } from '../hooks/useAuth'
 import { useCart } from '../contexts/CartContext'
+import { API_BASE_URL } from '../lib/client'
 
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>()
@@ -161,7 +162,7 @@ export default function ProductDetail() {
               <CardMedia
                 component="img"
                 height="400"
-                image={`http://localhost:4000${product.images[0]}`}
+                image={`${API_BASE_URL}${product.images[0]}`}
                 alt={product.name}
                 sx={{ 
                   objectFit: 'cover',
@@ -194,7 +195,7 @@ export default function ProductDetail() {
                     key={index}
                     component="img"
                     height="80"
-                    image={`http://localhost:4000${image}`}
+                    image={`${API_BASE_URL}${image}`}
                     alt={`${product.name} ${index + 2}`}
                     sx={{ 
                       objectFit: 'cover',

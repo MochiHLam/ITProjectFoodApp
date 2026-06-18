@@ -1,6 +1,7 @@
 import React from 'react'
-import { login } from '../api/auth'
+import { login, getProviders } from '../lib/auth'
 import { useAuth } from '../hooks/useAuth'
+import { API_BASE_URL } from '../lib/client'
 import { TextField, Button, Box, Typography, Paper, Divider, Stack } from '@mui/material'
 import { Google, GitHub, Facebook } from '@mui/icons-material'
 
@@ -10,16 +11,12 @@ export default function Login() {
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
-  const API = (import.meta as any).env.VITE_API_URL || 'http://localhost:4000'
   const [providers, setProviders] = React.useState<{ google?: boolean; github?: boolean; facebook?: boolean }>({})
 
   // Fetch available OAuth providers from backend
   React.useEffect(() => {
-    fetch(`${API}/api/auth/providers`)
-      .then((r) => r.json())
-      .then((data) => setProviders(data || {}))
-      .catch(() => setProviders({}))
-  }, [API])
+    getProviders().then(setProviders).catch(() => setProviders({}))
+  }, [])
 
   // Handle email/password login form submission
   async function onSubmit(e: React.FormEvent) {
@@ -51,17 +48,17 @@ export default function Login() {
           {/* OAuth provider buttons */}
           <Stack direction="row" spacing={1} justifyContent="center">
             {providers.google && (
-              <Button variant="outlined" startIcon={<Google />} onClick={() => { window.location.href = `${API}/api/auth/google` }} color="error">
+              <Button variant="outlined" startIcon={<Google />} onClick={() => { window.location.href = `${API_BASE_URL}/api/auth/google` }} color="error">
                 Google
               </Button>
             )}
             {providers.github && (
-              <Button variant="outlined" startIcon={<GitHub />} onClick={() => { window.location.href = `${API}/api/auth/github` }} color="inherit">
+              <Button variant="outlined" startIcon={<GitHub />} onClick={() => { window.location.href = `${API_BASE_URL}/api/auth/github` }} color="inherit">
                 GitHub
               </Button>
             )}
             {providers.facebook && (
-              <Button variant="outlined" startIcon={<Facebook />} onClick={() => { window.location.href = `${API}/api/auth/facebook` }} color="primary">
+              <Button variant="outlined" startIcon={<Facebook />} onClick={() => { window.location.href = `${API_BASE_URL}/api/auth/facebook` }} color="primary">
                 Facebook
               </Button>
             )}

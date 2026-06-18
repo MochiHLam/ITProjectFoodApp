@@ -1,9 +1,10 @@
 import React from 'react'
-import { listProducts, deleteProduct } from '../api/products'
+import { listProducts, deleteProduct } from '../lib/products'
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom'
 import { Box, TextField, Button, Paper, Stack, Typography, Card, CardContent, CardMedia, Alert } from '@mui/material'
 import { Delete as DeleteIcon, Login as LoginIcon } from '@mui/icons-material'
 import { useAuth } from '../hooks/useAuth'
+import { API_BASE_URL } from '../lib/client'
 
 // Products page with search functionality and product grid display
 export default function Products() {
@@ -158,7 +159,7 @@ export default function Products() {
                   <CardMedia
                     component="img"
                     height="200"
-                    image={`http://localhost:4000${p.images[0]}`}
+                    image={`${API_BASE_URL}${p.images[0]}`}
                     alt={p.name}
                     sx={{ objectFit: 'cover' }}
                   />
