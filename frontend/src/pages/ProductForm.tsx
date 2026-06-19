@@ -9,7 +9,8 @@ export default function ProductForm() {
   const [name, setName] = React.useState('')
   const [price, setPrice] = React.useState<number>(0)
   const [description, setDescription] = React.useState('')
-  const [images, setImages] = React.useState<FileList | null>(null)
+  const [image, setImage] = React.useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null)
   const [tags, setTags] = React.useState<string[]>([])
   const [tagInput, setTagInput] = React.useState('')
   const [error, setError] = React.useState<string | null>(null)
@@ -38,8 +39,8 @@ export default function ProductForm() {
       if (tags.length > 0) {
         fd.append('tags', JSON.stringify(tags))
       }
-      if (images) {
-        Array.from(images).forEach((f) => fd.append('images', f))
+      if (image) {
+        fd.append('images', image)
       }
       
       await createProduct(fd)
@@ -104,13 +105,29 @@ export default function ProductForm() {
           </Box>
 
           <Button variant="outlined" component="label">
-            Upload Images
-            <input hidden name="images" type="file" multiple accept="image/*" onChange={(e: React.ChangeEvent<HTMLInputElement>) => setImages(e.target.files)} />
+            Upload Image
+            <input
+              hidden
+              name="images"
+              type="file"
+              accept="image/*"
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                const file = e.target.files?.[0] || null
+                setImage(file)
+                setPreviewUrl(file ? URL.createObjectURL(file) : null)
+              }}
+            />
           </Button>
-          {images && images.length > 0 && (
-            <Typography variant="body2" color="text.secondary">
-              {images.length} file(s) selected
-            </Typography>
+          {previewUrl && (
+            <Box sx={{ mt: 1 }}>
+              <Typography variant="caption" color="text.secondary">Selected image:</Typography>
+              <Box
+                component="img"
+                src={previewUrl}
+                alt="preview"
+                sx={{ display: 'block', mt: 0.5, width: 120, height: 120, objectFit: 'cover', borderRadius: 1, border: '1px solid #ddd' }}
+              />
+            </Box>
           )}
           {error && <Typography color="error" variant="body2">{error}</Typography>}
           <Button variant="contained" type="submit" disabled={submitting}>{submitting ? 'Creating...' : 'Create'}</Button>

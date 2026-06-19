@@ -1,26 +1,30 @@
-  import { Link as RouterLink } from 'react-router-dom'
-import { 
-  Box, 
-  Typography, 
-  Button, 
-  Container, 
-  Card, 
-  CardContent, 
+import { Link as RouterLink } from 'react-router-dom'
+import {
+  Box,
+  Typography,
+  Button,
+  Container,
+  Card,
+  CardContent,
   Stack,
   Paper,
-  Avatar
+  Avatar,
+  Chip
 } from '@mui/material'
-import { 
+import {
   Restaurant as RestaurantIcon,
   DeliveryDining as DeliveryIcon,
   Star as StarIcon,
-  ShoppingCart as CartIcon
+  ShoppingCart as CartIcon,
+  AccessTime as ClockIcon
 } from '@mui/icons-material'
 import { useAuth } from '../hooks/useAuth'
+import { isBusinessOpen, BUSINESS_HOURS_TEXT } from '../hooks/useBusinessHours'
 
 // Home page with hero section, features showcase, and call-to-action
 export default function Home() {
   const { token, user } = useAuth()
+  const open = isBusinessOpen()
 
   // Feature cards data for showcase section
   const features = [
@@ -48,8 +52,8 @@ export default function Home() {
   return (
     <Box>
       {/* Hero Section - Main landing area with gradient background and action buttons */}
-      <Box 
-        sx={{ 
+      <Box
+        sx={{
           background: 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
           color: 'white',
           py: 12,
@@ -70,12 +74,12 @@ export default function Home() {
           }}
         />
         <Container maxWidth="lg" sx={{ position: 'relative', zIndex: 1 }}>
-          <Typography 
-            variant="h1" 
-            component="h1" 
-            gutterBottom 
+          <Typography
+            variant="h1"
+            component="h1"
+            gutterBottom
             fontWeight="bold"
-            sx={{ 
+            sx={{
               fontSize: { xs: '2.5rem', md: '4rem' },
               mb: 2,
               textShadow: '0 2px 4px rgba(0,0,0,0.1)'
@@ -83,10 +87,10 @@ export default function Home() {
           >
             Welcome to Food Delivery
           </Typography>
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              mb: 6, 
+          <Typography
+            variant="h4"
+            sx={{
+              mb: 6,
               opacity: 0.95,
               fontSize: { xs: '1.2rem', md: '1.5rem' },
               fontWeight: 300
@@ -94,10 +98,10 @@ export default function Home() {
           >
             Order your favorite meals and get them delivered fast!
           </Typography>
-          <Stack 
-            direction={{ xs: 'column', sm: 'row' }} 
-            spacing={3} 
-            justifyContent="center" 
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            spacing={3}
+            justifyContent="center"
             alignItems="center"
             sx={{ mb: 4 }}
           >
@@ -107,8 +111,8 @@ export default function Home() {
               component={RouterLink}
               to="/products"
               startIcon={<RestaurantIcon />}
-              sx={{ 
-                bgcolor: 'white', 
+              sx={{
+                bgcolor: 'white',
                 color: 'primary.main',
                 px: 4,
                 py: 1.5,
@@ -116,7 +120,7 @@ export default function Home() {
                 fontWeight: 600,
                 borderRadius: 3,
                 boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                '&:hover': { 
+                '&:hover': {
                   bgcolor: 'grey.100',
                   transform: 'translateY(-2px)',
                   boxShadow: '0 6px 16px rgba(0,0,0,0.2)'
@@ -133,8 +137,8 @@ export default function Home() {
                 component={RouterLink}
                 to="/cart"
                 startIcon={<CartIcon />}
-                sx={{ 
-                  borderColor: 'white', 
+                sx={{
+                  borderColor: 'white',
                   color: 'white',
                   px: 4,
                   py: 1.5,
@@ -142,8 +146,8 @@ export default function Home() {
                   fontWeight: 600,
                   borderRadius: 3,
                   borderWidth: 2,
-                  '&:hover': { 
-                    borderColor: 'white', 
+                  '&:hover': {
+                    borderColor: 'white',
                     bgcolor: 'rgba(255,255,255,0.1)',
                     transform: 'translateY(-2px)'
                   },
@@ -157,15 +161,51 @@ export default function Home() {
         </Container>
       </Box>
 
+      {/* Business Hours Banner */}
+      <Box
+        sx={{
+          background: open
+            ? 'linear-gradient(90deg, #e8f5e9 0%, #f1f8e9 100%)'
+            : 'linear-gradient(90deg, #fff3e0 0%, #fbe9e7 100%)',
+          borderBottom: '1px solid',
+          borderColor: open ? 'success.light' : 'warning.light',
+          py: 1.5
+        }}
+      >
+        <Container maxWidth="lg">
+          <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="center" justifyContent="center" spacing={2}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <ClockIcon sx={{ color: open ? 'success.main' : 'warning.main', fontSize: 20 }} />
+              <Typography variant="body2" fontWeight="bold" color={open ? 'success.main' : 'warning.main'}>
+                Open hours:
+              </Typography>
+              <Typography variant="body2" color="text.primary" fontWeight="medium">
+                {BUSINESS_HOURS_TEXT} • Monday – Sunday
+              </Typography>
+            </Stack>
+            <Chip
+              label={open ? 'Open now' : 'Closed'}
+              size="small"
+              sx={{
+                bgcolor: open ? 'success.main' : 'error.main',
+                color: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.75rem'
+              }}
+            />
+          </Stack>
+        </Container>
+      </Box>
+
       {/* Features Section - Showcase of service benefits with animated cards */}
       <Container maxWidth="lg" sx={{ py: 10 }}>
         <Box sx={{ textAlign: 'center', mb: 8 }}>
-          <Typography 
-            variant="h2" 
-            component="h2" 
+          <Typography
+            variant="h2"
+            component="h2"
             gutterBottom
             fontWeight="bold"
-            sx={{ 
+            sx={{
               fontSize: { xs: '2rem', md: '3rem' },
               mb: 2,
               color: 'text.primary'
@@ -173,10 +213,10 @@ export default function Home() {
           >
             Why Choose Us?
           </Typography>
-          <Typography 
-            variant="h6" 
+          <Typography
+            variant="h6"
             color="text.secondary"
-            sx={{ 
+            sx={{
               maxWidth: '600px',
               mx: 'auto',
               fontSize: { xs: '1rem', md: '1.2rem' },
@@ -186,22 +226,22 @@ export default function Home() {
             We provide exceptional food delivery service with the highest quality standards
           </Typography>
         </Box>
-        
-        <Box sx={{ 
-          display: 'flex', 
-          flexWrap: 'wrap', 
+
+        <Box sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
           gap: 4,
           justifyContent: 'center'
         }}>
           {features.map((feature, index) => (
-            <Box key={index} sx={{ 
-              flex: '1 1 300px', 
+            <Box key={index} sx={{
+              flex: '1 1 300px',
               maxWidth: '400px',
               minWidth: '300px'
             }}>
-              <Card 
-                sx={{ 
-                  height: '100%', 
+              <Card
+                sx={{
+                  height: '100%',
                   textAlign: 'center',
                   p: 4,
                   borderRadius: 3,
@@ -209,7 +249,7 @@ export default function Home() {
                   border: '1px solid rgba(0,0,0,0.05)',
                   position: 'relative',
                   overflow: 'hidden',
-                  '&:hover': { 
+                  '&:hover': {
                     transform: 'translateY(-8px)',
                     boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
                     transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
@@ -238,12 +278,12 @@ export default function Home() {
                   >
                     {feature.icon}
                   </Avatar>
-                  <Typography 
-                    variant="h4" 
-                    component="h3" 
+                  <Typography
+                    variant="h4"
+                    component="h3"
                     gutterBottom
                     fontWeight="bold"
-                    sx={{ 
+                    sx={{
                       mb: 2,
                       fontSize: { xs: '1.3rem', md: '1.5rem' },
                       color: 'text.primary'
@@ -251,10 +291,10 @@ export default function Home() {
                   >
                     {feature.title}
                   </Typography>
-                  <Typography 
-                    variant="body1" 
+                  <Typography
+                    variant="body1"
                     color="text.secondary"
-                    sx={{ 
+                    sx={{
                       fontSize: { xs: '0.95rem', md: '1rem' },
                       lineHeight: 1.6,
                       fontWeight: 400
@@ -271,8 +311,8 @@ export default function Home() {
 
       {/* Call to Action - Ordering prompt section (hidden for admin users) */}
       {user?.role !== 'admin' && (
-        <Box 
-          sx={{ 
+        <Box
+          sx={{
             background: 'linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)',
             py: 10,
             textAlign: 'center',
@@ -302,12 +342,12 @@ export default function Home() {
                 border: '1px solid rgba(255, 255, 255, 0.2)'
               }}
             >
-              <Typography 
-                variant="h2" 
-                component="h2" 
+              <Typography
+                variant="h2"
+                component="h2"
                 gutterBottom
                 fontWeight="bold"
-                sx={{ 
+                sx={{
                   fontSize: { xs: '2rem', md: '2.5rem' },
                   mb: 2,
                   color: 'text.primary'
@@ -315,10 +355,10 @@ export default function Home() {
               >
                 Ready to Order?
               </Typography>
-              <Typography 
-                variant="h5" 
-                color="text.secondary" 
-                sx={{ 
+              <Typography
+                variant="h5"
+                color="text.secondary"
+                sx={{
                   mb: 4,
                   fontSize: { xs: '1.1rem', md: '1.3rem' },
                   fontWeight: 400,
@@ -334,8 +374,8 @@ export default function Home() {
                   component={RouterLink}
                   to="/products"
                   startIcon={<RestaurantIcon />}
-                  sx={{ 
-                    px: 5, 
+                  sx={{
+                    px: 5,
                     py: 2,
                     fontSize: '1.1rem',
                     fontWeight: 600,

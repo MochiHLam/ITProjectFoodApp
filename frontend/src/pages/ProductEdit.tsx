@@ -11,8 +11,6 @@ import {
   Stack,
   IconButton,
   CircularProgress,
-  Card,
-  CardMedia,
   Divider,
   Chip
 } from '@mui/material'
@@ -35,7 +33,8 @@ export default function ProductEdit() {
   const [tagInput, setTagInput] = React.useState('')
   
   // Image upload states
-  const [images, setImages] = React.useState<FileList | null>(null)
+  const [image, setImage] = React.useState<File | null>(null)
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null)
 
   React.useEffect(() => {
     if (!id) return
@@ -59,11 +58,11 @@ export default function ProductEdit() {
     loadProduct()
   }, [id])
 
-  // Handle image file selection
+  // Handle image file selection (single image only)
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      setImages(e.target.files)
-    }
+    const file = e.target.files?.[0] || null
+    setImage(file)
+    setPreviewUrl(file ? URL.createObjectURL(file) : null)
   }
 
   // Handle form submission with images
@@ -76,7 +75,7 @@ export default function ProductEdit() {
       if (!name.trim()) throw new Error('Name is required')
       if (Number.isNaN(price) || price < 0) throw new Error('Price must be a non-negative number')
       
-      console.log('Submitting form with images:', images)
+      console.log('Submitting form with image:', image)
       
       // Process any pending tag input not yet confirmed with Enter
       if (tagInput.trim()) {
@@ -93,12 +92,9 @@ export default function ProductEdit() {
         formData.append('tags', JSON.stringify(tags))
       }
       
-      // Add new images if any
-      if (images && images.length > 0) {
-        console.log('Adding images to FormData:', Array.from(images).map(f => f.name))
-        Array.from(images).forEach((file) => {
-          formData.append('images', file)
-        })
+      // Add new image if selected (replaces old)
+      if (image) {
+        formData.append('images', image)
       }
       
       // Update product with FormData
@@ -225,49 +221,50 @@ export default function ProductEdit() {
             {/* Image Upload Section */}
             <Box>
               <Typography variant="h6" gutterBottom>
-                Upload Images
+                Upload Image
               </Typography>
               
-              {/* Current Images */}
-              {product?.images && product.images.length > 0 && (
+              {/* Current Image (chưa chọn ảnh mới) */}
+              {!previewUrl && product?.images && product.images.length > 0 && (
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Current Images:
+                    Current Image:
                   </Typography>
-                  <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap', gap: 1 }}>
-                    {product.images.map((image: string, index: number) => (
-                      <Card key={index} sx={{ width: 100, height: 100 }}>
-                        <CardMedia
-                          component="img"
-                          height="100"
-                          image={image}
-                          alt={`Product image ${index + 1}`}
-                          sx={{ objectFit: 'cover' }}
-                        />
-                      </Card>
-                    ))}
-                  </Stack>
+                  <Box
+                    component="img"
+                    src={product.images[0]}
+                    alt="Current product image"
+                    sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 1, border: '1px solid #ddd' }}
+                  />
                 </Box>
               )}
 
-              {/* File Input - Simple like ProductForm */}
+              {/* Preview ảnh mới chọn */}
+              {previewUrl && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    New Image (will replace current):
+                  </Typography>
+                  <Box
+                    component="img"
+                    src={previewUrl}
+                    alt="New image preview"
+                    sx={{ width: 120, height: 120, objectFit: 'cover', borderRadius: 1, border: '1px solid #1976d2' }}
+                  />
+                </Box>
+              )}
+
+              {/* File Input — chỉ 1 ảnh */}
               <Button variant="outlined" component="label" startIcon={<CloudUploadIcon />}>
-                Upload Images
+                Upload Image
                 <input 
                   hidden 
                   name="images" 
                   type="file" 
-                  multiple 
                   accept="image/*" 
                   onChange={handleImageChange} 
                 />
               </Button>
-              
-              {images && images.length > 0 && (
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                  {images.length} file(s) selected
-                </Typography>
-              )}
             </Box>
 
             {error && (

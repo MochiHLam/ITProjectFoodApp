@@ -6,10 +6,7 @@ exports.createProduct = async (req, res, next) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-    const images = [];
-    if (req.files && Array.isArray(req.files)) {
-      req.files.forEach((f) => images.push(`/uploads/${f.filename}`));
-    }
+    const images = req.cloudinaryUrls || []
     
     // Parse tags if provided as JSON string
     const productData = { ...req.body };
@@ -143,27 +140,11 @@ exports.updateProduct = async (req, res, next) => {
     
     console.log('Update - Processed tags:', updateData.tags);
     
-    // Handle image uploads
-    if (req.files && Array.isArray(req.files)) {
-      console.log('Processing uploaded files:', req.files.length);
-      const newImages = req.files.map((f) => `/uploads/${f.filename}`);
-      console.log('New image paths:', newImages);
-      
-      // Get current product to merge images
-      const currentProduct = await Product.findById(req.params.id);
-      console.log('Current product:', currentProduct ? { id: currentProduct._id, images: currentProduct.images } : 'not found');
-      
-      if (currentProduct) {
-        updateData.images = [...(currentProduct.images || []), ...newImages];
-        console.log('Merged images:', updateData.images);
-      } else {
-        updateData.images = newImages;
-        console.log('New product images:', updateData.images);
-      }
+    // Handle image upload — replace existing image with new one (single image)
+    if (req.cloudinaryUrls && req.cloudinaryUrls.length > 0) {
+      updateData.images = [req.cloudinaryUrls[0]]
     }
-    
-    console.log('Final update data:', updateData);
-    
+
     const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
     if (!updated) return res.status(404).json({ message: 'Not Found' });
     
@@ -191,10 +172,7 @@ exports.uploadProductImages = async (req, res, next) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found' });
     
-    const newImages = [];
-    if (req.files && Array.isArray(req.files)) {
-      req.files.forEach((f) => newImages.push(`/uploads/${f.filename}`));
-    }
+    const newImages = req.cloudinaryUrls || []
     
     // Add new images to existing images array
     const updatedImages = [...(product.images || []), ...newImages];

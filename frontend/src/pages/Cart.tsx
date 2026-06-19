@@ -1,3 +1,4 @@
+import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
   Box, 
@@ -19,11 +20,14 @@ import {
   ShoppingCart as ShoppingCartIcon
 } from '@mui/icons-material'
 import { useCart } from '../contexts/CartContext'
-import { API_BASE_URL } from '../lib/client'
+import { isBusinessOpen } from '../hooks/useBusinessHours'
+import ClosedDialog from '../components/ClosedDialog'
+
 
 export default function Cart() {
   const navigate = useNavigate()
   const { state, dispatch } = useCart()
+  const [closedDialogOpen, setClosedDialogOpen] = React.useState(false)
 
   const handleUpdateQuantity = (productId: string, quantity: number) => {
     dispatch({ type: 'UPDATE_QUANTITY', payload: { productId, quantity } })
@@ -34,6 +38,10 @@ export default function Cart() {
   }
 
   const handleCheckout = () => {
+    if (!isBusinessOpen()) {
+      setClosedDialogOpen(true)
+      return
+    }
     navigate('/checkout')
   }
 
@@ -59,6 +67,8 @@ export default function Cart() {
   }
 
   return (
+    <>
+      <ClosedDialog open={closedDialogOpen} onClose={() => setClosedDialogOpen(false)} />
     <Box>
       <Typography variant="h4" fontWeight="bold" sx={{ mb: 3 }}>
         Shopping Cart
@@ -70,7 +80,7 @@ export default function Cart() {
             <CardMedia
               component="img"
               sx={{ width: 150, height: 150 }}
-              image={item.product.images?.[0] ? `${API_BASE_URL}${item.product.images[0]}` : '/placeholder-food.jpg'}
+              image={item.product.images?.[0] ? item.product.images[0] : '/placeholder-food.jpg'}
               alt={item.product.name}
             />
             <CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
@@ -166,5 +176,6 @@ export default function Cart() {
         </Stack>
       </Paper>
     </Box>
+    </>
   )
 }

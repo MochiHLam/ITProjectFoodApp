@@ -18,6 +18,8 @@ import {
 } from '@mui/material'
 import { useCart } from '../contexts/CartContext'
 import { createOrder, type CreateOrderPayload } from '../lib/orders'
+import { isBusinessOpen } from '../hooks/useBusinessHours'
+import ClosedDialog from '../components/ClosedDialog'
 
 export default function Checkout() {
   const navigate = useNavigate()
@@ -25,6 +27,7 @@ export default function Checkout() {
   const [loading, setLoading] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [snackbarOpen, setSnackbarOpen] = React.useState(false)
+  const [closedDialogOpen, setClosedDialogOpen] = React.useState(false)
   
   const [formData, setFormData] = React.useState({
     street: '',
@@ -41,6 +44,12 @@ export default function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Kiểm tra giờ làm việc
+    if (!isBusinessOpen()) {
+      setClosedDialogOpen(true)
+      return
+    }
     
     if (!formData.street || !formData.city || !formData.postalCode || !formData.phone) {
       setError('Please fill in all required fields')
@@ -245,6 +254,8 @@ export default function Checkout() {
         </Box>
       </Stack>
       
+      <ClosedDialog open={closedDialogOpen} onClose={() => setClosedDialogOpen(false)} />
+
       {/* Success Snackbar */}
       <Snackbar
         open={snackbarOpen}

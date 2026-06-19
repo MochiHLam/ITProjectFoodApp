@@ -1,3 +1,4 @@
+require('dns').setServers(['8.8.8.8', '8.8.4.4']); // Force Google DNS (bypass local forwarder)
 require('dotenv').config({ override: true });
 const http = require('http');
 const app = require('./app');
