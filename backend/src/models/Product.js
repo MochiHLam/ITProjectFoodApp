@@ -12,6 +12,9 @@ const ProductSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Text index for fast search on name and tags
+ProductSchema.index({ name: 'text', tags: 'text' })
+
 module.exports = mongoose.model('Product', ProductSchema);
 
 

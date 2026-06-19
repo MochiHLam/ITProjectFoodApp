@@ -19,12 +19,12 @@ import {
   AccessTime as ClockIcon
 } from '@mui/icons-material'
 import { useAuth } from '../hooks/useAuth'
-import { isBusinessOpen, BUSINESS_HOURS_TEXT } from '../hooks/useBusinessHours'
+import { isBusinessOpen, useIsBusinessOpen, BUSINESS_HOURS_TEXT } from '../hooks/useBusinessHours'
 
 // Home page with hero section, features showcase, and call-to-action
 export default function Home() {
   const { token, user } = useAuth()
-  const open = isBusinessOpen()
+  const open = useIsBusinessOpen()
 
   // Feature cards data for showcase section
   const features = [

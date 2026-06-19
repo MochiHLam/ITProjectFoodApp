@@ -31,19 +31,14 @@ function authorizeRoles(...allowedRoles) {
 // Middleware to check if user still exists and is active
 async function validateUserExists(req, res, next) {
   try {
-    console.log('validateUserExists: Checking user ID:', req.user.id);
-    const user = await User.findById(req.user.id);
-    console.log('validateUserExists: Found user:', user ? 'YES' : 'NO', user?.isActive ? 'ACTIVE' : 'INACTIVE');
-    
+    const user = await User.findById(req.user.id)
     if (!user || !user.isActive) {
-      console.log('validateUserExists: User not found or inactive, returning 401');
-      return res.status(401).json({ message: 'User account has been deactivated or deleted' });
+      return res.status(401).json({ message: 'User account has been deactivated or deleted' })
     }
-    req.user = { ...req.user, user };
-    next();
+    req.user = { ...req.user, user }
+    next()
   } catch (err) {
-    console.log('validateUserExists: Error:', err.message);
-    return res.status(401).json({ message: 'User validation failed' });
+    return res.status(401).json({ message: 'User validation failed' })
   }
 }
 

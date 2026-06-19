@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const { body } = require('express-validator');
 const { authenticateJWT, authorizeRoles, validateUserExists } = require('../middlewares/auth');
+const { checkBusinessHours } = require('../middlewares/businessHours');
 const orderController = require('../controllers/orderController');
 
 const router = Router();
@@ -10,6 +11,7 @@ router.post(
   '/',
   authenticateJWT,
   validateUserExists,
+  checkBusinessHours,
   [
     body('items').isArray({ min: 1 }).withMessage('Items array is required'),
     body('items.*.product').isMongoId().withMessage('Valid product ID is required'),

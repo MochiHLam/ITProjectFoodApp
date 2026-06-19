@@ -7,10 +7,7 @@ exports.createProduct = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
     const images = req.cloudinaryUrls || []
-    
-    // Parse tags if provided as JSON string
-    const productData = { ...req.body };
-    console.log('Received tags:', productData.tags, 'Type:', typeof productData.tags);
+    const productData = { ...req.body }
     
     if (productData.tags !== undefined) {
       if (typeof productData.tags === 'string') {
@@ -46,10 +43,8 @@ exports.createProduct = async (req, res, next) => {
       }
     }
     
-    console.log('Processed tags:', productData.tags);
-    
-    const product = await Product.create({ ...productData, images, createdBy: req.user.id });
-    res.status(201).json(product);
+    const product = await Product.create({ ...productData, images, createdBy: req.user.id })
+    res.status(201).json(product)
   } catch (err) {
     next(err);
   }
@@ -83,19 +78,10 @@ exports.getProductById = async (req, res, next) => {
 
 exports.updateProduct = async (req, res, next) => {
   try {
-    console.log('Update product request:', {
-      id: req.params.id,
-      body: req.body,
-      files: req.files ? req.files.map(f => ({ filename: f.filename, originalname: f.originalname })) : 'no files'
-    });
-    
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
-    
-    const updateData = { ...req.body };
-    
-    // Parse tags if provided as JSON string
-    console.log('Update - Received tags:', updateData.tags, 'Type:', typeof updateData.tags);
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() })
+
+    const updateData = { ...req.body }
     
     if (updateData.tags !== undefined) {
       if (typeof updateData.tags === 'string') {
@@ -138,18 +124,15 @@ exports.updateProduct = async (req, res, next) => {
       delete updateData.tags;
     }
     
-    console.log('Update - Processed tags:', updateData.tags);
-    
+
     // Handle image upload — replace existing image with new one (single image)
     if (req.cloudinaryUrls && req.cloudinaryUrls.length > 0) {
       updateData.images = [req.cloudinaryUrls[0]]
     }
 
-    const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true });
-    if (!updated) return res.status(404).json({ message: 'Not Found' });
-    
-    console.log('Updated product:', { id: updated._id, images: updated.images });
-    res.json(updated);
+    const updated = await Product.findByIdAndUpdate(req.params.id, updateData, { new: true })
+    if (!updated) return res.status(404).json({ message: 'Not Found' })
+    res.json(updated)
   } catch (err) {
     console.error('Update product error:', err);
     next(err);
