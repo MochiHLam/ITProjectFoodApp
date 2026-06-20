@@ -1,14 +1,14 @@
-Food Delivery App
+#Food Delivery App
 
 A fullstack food delivery web application built with Node.js + Express (backend) and React + TypeScript (frontend).
 
-Tech Stack
+##Tech Stack
 
-Backend: Node.js, Express 5, MongoDB, Mongoose, Socket.IO, JWT, Cloudinary, Passport (OAuth)
+##Backend: Node.js, Express 5, MongoDB, Mongoose, Socket.IO, JWT, Cloudinary, Passport (OAuth)
 
-Frontend: React 19, TypeScript, Vite, Material UI, Axios, Socket.IO Client
+##Frontend: React 19, TypeScript, Vite, Material UI, Axios, Socket.IO Client
 
-Features
+##Features
 
 Authentication — Email/password + OAuth (Google, GitHub, Facebook)
 Shopping cart with quantity management
@@ -18,14 +18,14 @@ User management (admin)
 Business hours enforcement (6:00 AM – 10:00 PM Vietnam time)
 Product search and pagination
 
-Getting Started
+##Getting Started
 
-Prerequisites
+##Prerequisites
 
 Node.js >= 18
 MongoDB
 
-Backend
+##Backend
 
 bashcd backend
 npm install
