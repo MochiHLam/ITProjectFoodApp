@@ -40,6 +40,15 @@ jobs:
           VITE_API_URL: ${{ secrets.VITE_API_URL }}
           VITE_WS_URL: ${{ secrets.VITE_WS_URL }}
 
+      - name: Clear old frontend files
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo rm -rf /var/www/html/*
+
       - name: Copy frontend to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -57,6 +66,5 @@ jobs:
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            sudo rm -rf /var/www/html/*
             docker pull docker2309/food-app-backend:latest
             docker compose -f /home/ubuntu/ITProjectFoodApp/docker-compose.yml up -d
